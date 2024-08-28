@@ -3,6 +3,7 @@ use std::{collections::VecDeque, env};
 use operator::OperatorStore;
 
 mod operator;
+mod tests;
 
 #[derive(Debug, PartialEq)]
 enum Token {
@@ -23,8 +24,6 @@ fn round(x: f64, decimals: u32) -> f64 {
     (x * y).round() / y
 }
 fn main() {
-    let mut os = OperatorStore::new();
-
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 2 {
@@ -38,17 +37,23 @@ fn main() {
 
     let input = args.get(1).unwrap().clone();
 
+    println!("{}", process(input, prec == "-p"));
+}
+
+fn process(input: String, precise: bool) -> f64 {
+    let mut os = OperatorStore::new();
+
     let mut tokens = tokenizer(&input, &mut os);
 
     tokens = process_negatives(tokens);
 
     let mut res = calc(eval(tokens, &os), &os);
 
-    if prec != *"-p" {
+    if !precise {
         res = round(res, 2);
     }
 
-    println!("{}", res);
+    res
 }
 
 fn process_negatives(mut input: Vec<Token>) -> Vec<Token> {
@@ -84,8 +89,13 @@ fn tokenizer(input: &str, operators: &mut OperatorStore) -> Vec<Token> {
     let mut tokens = vec![];
     let mut is_number = input.chars().next().unwrap().is_numeric();
     let mut new = true;
+    let mut skip = 0;
 
     for c in input.chars() {
+        if skip > 0 {
+            skip -= 1;
+            continue;
+        }
         if is_number && !(c.is_numeric() || c == '.') {
             let number: f64 = current.parse().unwrap();
             tokens.push(Token::Number(number));
@@ -108,6 +118,7 @@ fn tokenizer(input: &str, operators: &mut OperatorStore) -> Vec<Token> {
 
             if m.0 {
                 tokens.push(m.1.unwrap());
+                skip = m.2;
                 new = true;
                 continue;
             }

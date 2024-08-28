@@ -41,19 +41,22 @@ impl OperatorStore {
         }
     }
 
-    pub fn match_step(&mut self, next: char) -> (bool, Option<Token>) {
+    pub fn match_step(&mut self, next: char) -> (bool, Option<Token>, u32) {
         self.matching.push(next);
 
         self.current_matching
             .retain(|code| code.starts_with(&self.matching));
 
         if self.current_matching.len() == 1 {
-            let ret = Option::from(Token::Op(self.current_matching.remove(0)));
+            let s = self.current_matching.remove(0);
+            let skip = s.len() - self.matching.len();
+            let ret = Option::from(Token::Op(s));
             self.new_match_step();
-            return (true, ret);
+
+            return (true, ret, skip as u32);
         }
 
-        (false, Option::None)
+        (false, Option::None, 0)
     }
 
     pub fn get_precedence(&self, code: &String) -> u8 {
