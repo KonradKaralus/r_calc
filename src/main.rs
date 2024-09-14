@@ -1,7 +1,10 @@
-use std::{collections::VecDeque, env};
+use clap::Parser;
+use std::collections::VecDeque;
 
+use cli::Cli;
 use operator::OperatorStore;
 
+mod cli;
 mod operator;
 mod tests;
 
@@ -24,20 +27,12 @@ fn round(x: f64, decimals: u32) -> f64 {
     (x * y).round() / y
 }
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let cli = Cli::parse();
 
-    if args.len() < 2 {
-        panic!("no expression supplied");
-    }
+    let expr = cli.expression;
+    let prec = cli.precise;
 
-    let prec = match args.get(2) {
-        Some(s) => s.clone(),
-        None => "".to_string(),
-    };
-
-    let input = args.get(1).unwrap().clone();
-
-    println!("{}", process(input, prec == "-p"));
+    println!("{}", process(expr, prec));
 }
 
 fn process(input: String, precise: bool) -> f64 {
