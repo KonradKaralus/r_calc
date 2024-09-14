@@ -18,4 +18,4 @@ Because of this, new operators may be added with relativ ease.
 
 ## Arguments
 
-* `-p` Skip rounding the result to to decimal points  
+* `-p` Skip rounding the result to two decimal points  
